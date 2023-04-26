@@ -1,0 +1,8 @@
+tensorflow-quantum
+tensorflow
+numpy
+pandas
+seaborn
+cirq
+sympy
+collections
