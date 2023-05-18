@@ -15,30 +15,43 @@ class DatasetHandler:
         for i,c in enumerate(self.classes): 
             print('     Class ' + str(i) + ' ->', c)
 
-    def load_paths_labels(self, classes):
+    def load_paths_labels(self, root, classes):
         # Initialize imaages path and images label lists
         imgs_path = []
         imgs_label = []
         class_counter = 0
-        encoded_class = np.zeros((len(classes)))
+        #encoded_class = np.zeros((len(classes)))
+
+        class_dict = {
+            "AnnualCrop" : 0,#[0,0,0,0],
+            "Forest" : 1, #[0,0,0,1],
+            "HerbaceousVegetation" : 2, #[0,0,1,0],
+            "Highway" : 3, #[0,0,1,1],
+            "Industrial" : 4, #[0,1,0,0],
+            "Pasture" : 5,# [0,1,0,1],
+            "PermanentCrop" : 6, #[0,1,1,0],
+            "Residential" : 7, #[0,1,1,1],
+            "River" : 8, #[1,0,0,0],
+            "SeaLake" : 9, #[1,0,0,1]
+        }
 
         # For each class in the class list
         for c in classes:
             # List all the images in that class
-            paths_in_c = glob.glob(c+'/*')
+            paths_in_c = glob.glob(os.path.join(root, c+'/*'))
             # For each image in that class
             for path in paths_in_c:
                 # Append the path of the image in the images path list
                 imgs_path.append(path)
                 # One hot encode the label
-                encoded_class[class_counter] = 1
+                #encoded_class[class_counter] = 1
                 # Append the label in the iamges label list
-                imgs_label.append(encoded_class)
+                imgs_label.append(class_dict[c])#encoded_class)
                 # Reset the class
-                encoded_class = np.zeros((len(classes)))
+                #encoded_class = np.zeros((len(classes)))
 
             # Jump to the next class after iterating all the paths
-            class_counter = class_counter + 1
+            # class_counter = class_counter + 1
 
         # Shuffler paths and labels in the same way
         c = list(zip(imgs_path, imgs_label))
@@ -58,7 +71,6 @@ class DatasetHandler:
         # Initialize the vectors to be yield
         batch_in = np.zeros((batch_size, img_shape[0], img_shape[1], img_shape[2]))
         batch_out = np.zeros((batch_size, n_classes))
-
         # Repeat until the generator will be stopped
         while True:
             # Load a batch of images and labels
@@ -67,13 +79,15 @@ class DatasetHandler:
                 index = random.randint(0, len(imgs_path)-1)
                 # Fill the vectors with images and labels
                 batch_in[i, ...] = plt.imread(imgs_path[index])/255.0
-                batch_out[i, ...] = imgs_label[index]
+                l = np.zeros((n_classes))
+                l[imgs_label[index]] = 1
+                batch_out[i, ...] = l
 
             # Yield/Return the image and labeld vectors
             yield batch_in, batch_out
     
     # Data genertor: given images paths and images labels yield a batch of images and labels
-    def qcnn_data_loader(self, imgs_path, imgs_label, batch_size = 1, img_shape = (64, 64, 3)):
+    def qcnn_data_loader(self, imgs_path, imgs_label, batch_size = 1, img_shape = (64, 64, 3), returnpath=False):
         # Initialize the vectors to be yield
         batch_in = np.zeros((batch_size, img_shape[2], img_shape[0], img_shape[1]))
         batch_out = np.zeros((batch_size))
@@ -86,6 +100,9 @@ class DatasetHandler:
                 index = random.randint(0, len(imgs_path)-1)
                 # Fill the vectors with images and labels
                 batch_in[i, ...] = np.transpose(plt.imread(imgs_path[index])/255.0)
-                batch_out[i] = np.argmax(imgs_label[index])
+                batch_out[i] = imgs_label[index]
             # Yield/Return the image and labeld vectors
-            yield  torch.Tensor(batch_in),  torch.Tensor(batch_out).type(torch.LongTensor)
+            if returnpath:
+              yield  torch.Tensor(batch_in),  torch.Tensor(batch_out).type(torch.LongTensor), imgs_path[index]
+            else:
+              yield  torch.Tensor(batch_in),  torch.Tensor(batch_out).type(torch.LongTensor)
