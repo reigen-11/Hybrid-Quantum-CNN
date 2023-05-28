@@ -1,6 +1,4 @@
 matplotlib==3.7.1
 numpy==1.23.5
 torch==2.0.0
-torch==2.0.0
 qiskit==0.24.0
-
