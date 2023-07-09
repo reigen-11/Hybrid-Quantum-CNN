@@ -14,3 +14,6 @@ Quantum computing, on the other hand, offers potential advantages for image clas
 and exploit quantum phenomena such as entanglement and superposition. 
 By combining classical deep learning techniques with quantum computing, we can leverage the strengths of both approaches and achieve improved performance in satellite image classification.
 
+### Credits
+
+The individuals responsible, deserve credit for their significant [project](https://github.com/ESA-PhiLab/QNN4EO)
